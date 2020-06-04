@@ -122,6 +122,64 @@ end else if (TARGET == "ALTERA") begin
     end
 
     assign q1 = q1_delay;
+end else if (TARGET == "ALTERA_MAX10") begin
+    reg [2*WIDTH-1:0] q_delay;
+    wire [2*WIDTH-1:0] q_int;
+    altera_gpio_lite #(
+      .PIN_TYPE                                 ("input"),
+      .SIZE                                     (WIDTH),
+      .REGISTER_MODE                            ("ddr"),
+      .BUFFER_TYPE                              ("single-ended"),
+      .ASYNC_MODE                               ("none"),
+      .SYNC_MODE                                ("none"),
+      .BUS_HOLD                                 ("false"),
+      .OPEN_DRAIN_OUTPUT                        ("false"),
+      .ENABLE_OE_PORT                           ("false"),
+      .ENABLE_NSLEEP_PORT                       ("false"),
+      .ENABLE_CLOCK_ENA_PORT                    ("false"),
+      .SET_REGISTER_OUTPUTS_HIGH                ("false"),
+      .INVERT_OUTPUT                            ("false"),
+      .INVERT_INPUT_CLOCK                       ("false"),
+      .USE_ONE_REG_TO_DRIVE_OE                  ("false"),
+      .USE_DDIO_REG_TO_DRIVE_OE                 ("false"),
+      .USE_ADVANCED_DDR_FEATURES                ("false"),
+      .USE_ADVANCED_DDR_FEATURES_FOR_INPUT_ONLY ("false"),
+      .ENABLE_OE_HALF_CYCLE_DELAY               ("true"),
+      .INVERT_CLKDIV_INPUT_CLOCK                ("false"),
+      .ENABLE_PHASE_INVERT_CTRL_PORT            ("false"),
+      .ENABLE_HR_CLOCK                          ("false"),
+      .INVERT_OUTPUT_CLOCK                      ("false"),
+      .INVERT_OE_INCLOCK                        ("false"),
+      .ENABLE_PHASE_DETECTOR_FOR_CK             ("false")
+    ) max10_iddr_inst (
+      .inclock         (clk), // inclock.export
+      .dout            (q_int),    //    dout.export
+      .pad_in          (d),  //  pad_in.export
+      .inclocken       (1'b1),    // (terminated)
+      .fr_clock        (),        // (terminated)
+      .hr_clock        (),        // (terminated)
+      .invert_hr_clock (1'b0),    // (terminated)
+      .outclock        (1'b0),    // (terminated)
+      .outclocken      (1'b0),    // (terminated)
+      .phy_mem_clock   (1'b0),    // (terminated)
+      .mimic_clock     (),        // (terminated)
+      .din             ({WIDTH{2'b00}}),   // (terminated)
+      .pad_io          (),        // (terminated)
+      .pad_io_b        (),        // (terminated)
+      .pad_in_b        ({WIDTH{1'b0}}),    // (terminated)
+      .pad_out         (),        // (terminated)
+      .pad_out_b       (),        // (terminated)
+      .aset            (1'b0),    // (terminated)
+      .aclr            (1'b0),    // (terminated)
+      .sclr            (1'b0),    // (terminated)
+      .nsleep          ({WIDTH{1'b0}}),    // (terminated)
+      .oe              ({WIDTH{1'b0}})     // (terminated)
+    );
+
+    always @(posedge clk) begin
+      q_delay <= q_int;
+    end
+    assign {q2, q1} = q_delay;
 end else begin
     reg [WIDTH-1:0] d_reg_1 = {WIDTH{1'b0}};
     reg [WIDTH-1:0] d_reg_2 = {WIDTH{1'b0}};
