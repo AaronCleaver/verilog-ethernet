@@ -133,13 +133,6 @@ wr_hash (
 
 integer i;
 
-initial begin
-    for (i = 0; i < 2**CACHE_ADDR_WIDTH; i = i + 1) begin
-        valid_mem[i] = 1'b0;
-        ip_addr_mem[i] = 32'd0;
-        mac_addr_mem[i] = 48'd0;
-    end
-end
 
 always @* begin
     mem_write = 1'b0;
@@ -233,7 +226,11 @@ always @(posedge clk) begin
 
     query_response_mac_reg <= mac_addr_mem[rd_ptr_reg];
 
-    if (mem_write) begin
+	 if (rst) begin
+	   for (i = 0; i < 2**CACHE_ADDR_WIDTH; i = i + 1) begin
+        valid_mem[i] = 1'b0;
+      end
+    end else if (mem_write) begin
         valid_mem[wr_ptr_reg] <= !clear_cache_reg;
         ip_addr_mem[wr_ptr_reg] <= write_ip_reg;
         mac_addr_mem[wr_ptr_reg] <= write_mac_reg;
